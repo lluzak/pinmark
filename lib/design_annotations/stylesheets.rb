@@ -74,6 +74,10 @@ module DesignAnnotations
       .design-annotation-marker:hover { transform: translate(-50%, -50%) scale(1.15); }
       .design-annotation-marker.is-resolved { background: #34d399; opacity: .75; }
       .design-annotation-marquee { position: absolute; z-index: 99998; border: 1.5px dashed #f97316; background: rgba(249,115,22,.12); pointer-events: none; }
+      .design-annotation-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+      .design-annotation-panel-collapse { background: transparent; color: #fff; border: 0; cursor: pointer; padding: 0 6px; font: 14px sans-serif; opacity: .6; }
+      .design-annotation-panel-collapse:hover { opacity: 1; }
+      .design-annotation-panel.is-collapsed { max-height: none; padding: 8px 12px; overflow: hidden; }
     CSS
   end
 end

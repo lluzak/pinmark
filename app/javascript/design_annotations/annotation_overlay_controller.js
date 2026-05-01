@@ -3,6 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 
 const ACTIVE_FLAG = "design_annotate"
 const MODE_FLAG = "design_annotate_mode"
+const COLLAPSED_FLAG = "design_annotate_panel_collapsed"
 // URLs are relative to the engine mount path. The default mount in the
 // install generator is /dev/design_annotations.
 const CREATE_URL = "/dev/design_annotations/annotations"
@@ -26,6 +27,7 @@ export default class extends Controller {
     this.serverComments = []
     this.active = localStorage.getItem(ACTIVE_FLAG) === "1"
     this.targetMode = localStorage.getItem(MODE_FLAG) === "component" ? "component" : "element"
+    this._panelCollapsed = localStorage.getItem(COLLAPSED_FLAG) === "1"
     this._renderModeButton()
     if (this.active) this._activate()
     this._setToggleLabel(this.active)
@@ -543,12 +545,36 @@ export default class extends Controller {
     const addressed = comments.filter((c) => c.status === "addressed")
     const ordered = [...pending, ...addressed]
     this.panelTarget.innerHTML = ""
+    this.panelTarget.classList.toggle("is-collapsed", !!this._panelCollapsed)
+
+    const headerRow = document.createElement("div")
+    headerRow.className = "design-annotation-panel-header"
 
     const heading = document.createElement("strong")
     heading.textContent = `Annotations (${pending.length} pending`
     if (addressed.length > 0) heading.textContent += ` • ${addressed.length} resolved`
     heading.textContent += ")"
-    this.panelTarget.appendChild(heading)
+    headerRow.appendChild(heading)
+
+    const collapseBtn = document.createElement("button")
+    collapseBtn.type = "button"
+    collapseBtn.className = "design-annotation-panel-collapse"
+    collapseBtn.textContent = this._panelCollapsed ? "+" : "−"
+    collapseBtn.title = this._panelCollapsed ? "Expand panel" : "Collapse panel"
+    collapseBtn.addEventListener("click", () => {
+      this._panelCollapsed = !this._panelCollapsed
+      if (this._panelCollapsed) {
+        localStorage.setItem(COLLAPSED_FLAG, "1")
+      } else {
+        localStorage.removeItem(COLLAPSED_FLAG)
+      }
+      this._renderPanel()
+    })
+    headerRow.appendChild(collapseBtn)
+
+    this.panelTarget.appendChild(headerRow)
+
+    if (this._panelCollapsed) return
 
     ordered.forEach((c) => {
       const isResolved = c.status === "addressed"
