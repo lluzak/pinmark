@@ -3,9 +3,11 @@ import { Controller } from "@hotwired/stimulus"
 
 const ACTIVE_FLAG = "design_annotate"
 const MODE_FLAG = "design_annotate_mode"
-const CREATE_URL = "/dev/design_annotations"
-const INDEX_URL = "/dev/design_annotations"
-const DELETE_URL = (id) => `/dev/design_annotations/${encodeURIComponent(id)}`
+// URLs are relative to the engine mount path. The default mount in the
+// install generator is /dev/design_annotations.
+const CREATE_URL = "/dev/design_annotations/annotations"
+const INDEX_URL = "/dev/design_annotations/annotations"
+const DELETE_URL = (id) => `/dev/design_annotations/annotations/${encodeURIComponent(id)}`
 
 export default class extends Controller {
   static targets = ["panel", "popoverTemplate", "popoverInput", "popoverHeader", "popoverDebug", "modeButton"]
@@ -195,6 +197,10 @@ export default class extends Controller {
       this._clearHighlight()
       return
     }
+    if (target.closest("#design-annotation-activator")) {
+      this._clearHighlight()
+      return
+    }
     const componentEl = target.closest("[data-design-annotation-id]")
     if (!componentEl) {
       this._clearHighlight()
@@ -253,6 +259,7 @@ export default class extends Controller {
   _maybeOpenPopover(e) {
     if (!this.active) return
     if (this.element.contains(e.target)) return
+    if (e.target.closest("#design-annotation-activator")) return
     const componentEl = e.target.closest("[data-design-annotation-id]")
     if (!componentEl) return
     e.preventDefault()
