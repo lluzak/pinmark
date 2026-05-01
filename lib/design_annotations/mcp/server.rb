@@ -17,6 +17,7 @@ module DesignAnnotations
           version: VERSION,
           tools: [
             Tools::ListPending,
+            Tools::ListResolved,
             Tools::MarkAddressed,
             Tools::ClearAddressed
           ],

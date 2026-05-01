@@ -57,6 +57,7 @@ RSpec.describe "Dev design annotations endpoint", type: :request do
     tool_names = payload.dig("result", "tools").map { |t| t["name"] }
     expect(tool_names).to contain_exactly(
       "list_pending_annotations",
+      "list_resolved_annotations",
       "mark_addressed",
       "clear_addressed"
     )

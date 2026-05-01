@@ -47,6 +47,10 @@ module DesignAnnotations
         read.fetch("annotations", []).select { |entry| entry["status"] == "pending" }
       end
 
+      def addressed
+        read.fetch("annotations", []).select { |entry| entry["status"] == "addressed" }
+      end
+
       def append(entries)
         data = read
         data["annotations"] = data.fetch("annotations", []) + Array(entries)
