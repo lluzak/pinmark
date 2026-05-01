@@ -343,14 +343,11 @@ export default class extends Controller {
     if (componentEl) {
       isTagMode = wantsTag && componentEl.contains(target) && target !== componentEl
       next = isTagMode ? target : componentEl
-    } else if (wantsTag) {
-      // Free element targeting: highlight any element on the page even when
-      // it's outside any annotated component (e.g. layout wrapper divs).
+    } else {
+      // No annotated ancestor — fall through to the cursor target so layout
+      // wrappers, top-level divs, plain ERB pages, etc. are still hoverable.
       isTagMode = true
       next = target
-    } else {
-      this._clearHighlight()
-      return
     }
 
     if (next === this._currentHighlight) {
@@ -410,12 +407,10 @@ export default class extends Controller {
       const altMode = wantsTag && e.target !== componentEl
       nodeId = componentEl.dataset.designAnnotationId
       selector = altMode ? this._domPathRelativeTo(componentEl, e.target) : null
-    } else if (wantsTag) {
+    } else {
       // Page-level free target: no annotated ancestor.
       nodeId = null
       selector = this._domPathRelativeTo(document.body, e.target)
-    } else {
-      return
     }
 
     e.preventDefault()
