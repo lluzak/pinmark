@@ -22,7 +22,7 @@ RSpec.describe "design_annotations/_activator", type: :view do
     expect(rendered).to include("is-on")
   end
 
-  it "wires the inline cookie toggle script" do
+  it "wires the inline cookie toggle onclick" do
     Current.design_annotations = nil
     render partial: "design_annotations/activator"
 
@@ -30,6 +30,8 @@ RSpec.describe "design_annotations/_activator", type: :view do
     expect(rendered).to include("path=/")
     expect(rendered).to include("max-age=2592000")
     expect(rendered).to include("max-age=0")
-    expect(rendered).to include("location.reload()")
+    expect(rendered).to include("window.location.assign")
+    expect(rendered).to include('data-turbo="false"')
+    expect(rendered).to include("onclick=")
   end
 end
