@@ -27,19 +27,10 @@ The generator:
 
 ## Manual wiring
 
-The engine is intentionally minimal — three host touch-points remain manual
+The engine is intentionally minimal — a few host touch-points remain manual
 because they live in host-owned classes:
 
-1. **Phlex base class** — include the concern so each component render is
-   wrapped in `<!-- design-annotation:begin/end -->` markers:
-
-   ```ruby
-   class Components::Base < Phlex::HTML
-     include DesignAnnotations::Phlex if Rails.env.development?
-   end
-   ```
-
-2. **Current attributes** — the per-request tracker lives on
+1. **Current attributes** — the per-request tracker lives on
    `ActiveSupport::CurrentAttributes`:
 
    ```ruby
@@ -48,16 +39,27 @@ because they live in host-owned classes:
    end
    ```
 
-3. **Layout** — render the activator + overlay near the bottom of `<body>`:
+2. **Layout** — render the activator + overlay partials near the bottom of
+   `<body>`. The partials are plain ERB so they work in any host (ERB,
+   Phlex, ViewComponent, mixed):
+
+   ```erb
+   <% if Rails.env.development? && Current.design_annotations.present? %>
+     <%= render "design_annotations/activator" %>
+     <%= render "design_annotations/overlay" %>
+   <% end %>
+   ```
+
+   From a Phlex view the same string-path render works:
 
    ```ruby
    if Rails.env.development? && Current.design_annotations.present?
-     render DesignAnnotations::Activator.new
-     render DesignAnnotations::AnnotationOverlay.new
+     render "design_annotations/activator"
+     render "design_annotations/overlay"
    end
    ```
 
-4. **Controllers** — include the session concern in the controllers whose
+3. **Controllers** — include the session concern in the controllers whose
    responses should support annotations:
 
    ```ruby
@@ -65,6 +67,22 @@ because they live in host-owned classes:
      include DesignAnnotations::Session
    end
    ```
+
+4. **Phlex base class (optional)** — only if your host uses Phlex. Include
+   the concern in your component base class so each component render is
+   wrapped in `<!-- design-annotation:begin/end -->` markers. Hosts without
+   Phlex skip this step entirely:
+
+   ```ruby
+   class Components::Base < Phlex::HTML
+     include DesignAnnotations::Phlex if Rails.env.development?
+   end
+   ```
+
+   `DesignAnnotations::Phlex` is the only Phlex-specific surface in the
+   engine. The activator/overlay UI no longer requires Phlex to be present
+   in the host. The ViewComponent integration is also opt-in and gated on
+   `defined?(::ViewComponent::Base)`.
 
 ## MCP
 

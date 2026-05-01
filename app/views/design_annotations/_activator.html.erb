@@ -1,0 +1,8 @@
+<%
+  enabled = DesignAnnotations.tracker.present?
+  css_class = enabled ? "design-annotation-activator is-on" : "design-annotation-activator"
+  label = enabled ? "Disable annotations" : "Enable annotations"
+%>
+<button type="button" id="design-annotation-activator" class="<%= css_class %>"><%= label %></button>
+<style><%= DesignAnnotations::Stylesheets::ACTIVATOR.html_safe %></style>
+<script><%= DesignAnnotations::Stylesheets::ACTIVATOR_SCRIPT.html_safe %></script>

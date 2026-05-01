@@ -2,6 +2,7 @@
 
 require "design_annotations/version"
 require "design_annotations/engine"
+require "design_annotations/stylesheets"
 require "design_annotations/tracker"
 require "design_annotations/source_locator"
 require "design_annotations/wrapper"

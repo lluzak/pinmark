@@ -1,8 +1,47 @@
 # frozen_string_literal: true
 
 module DesignAnnotations
-  class AnnotationOverlay < ::Phlex::HTML
-    STYLESHEET = <<~CSS
+  # Inline CSS used by the engine's UI partials. Kept in Ruby so the partials
+  # stay free of large heredoc blocks and the styles can be reused across
+  # render contexts without depending on the asset pipeline.
+  module Stylesheets
+    ACTIVATOR = <<~CSS
+      .design-annotation-activator {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        z-index: 99999;
+        padding: 6px 10px;
+        background: #1f2937;
+        color: #fff;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        font: 12px sans-serif;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      }
+      .design-annotation-activator:hover { background: #374151; }
+      .design-annotation-activator.is-on { background: #f97316; color: #111; border-color: #f97316; }
+      .design-annotation-activator.is-on:hover { background: #ea580c; }
+    CSS
+
+    ACTIVATOR_SCRIPT = <<~JS
+      (function() {
+        var btn = document.getElementById('design-annotation-activator');
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+          var on = document.cookie.split('; ').some(function(c) { return c.indexOf('design_annotate=1') === 0; });
+          if (on) {
+            document.cookie = 'design_annotate=; path=/; max-age=0';
+          } else {
+            document.cookie = 'design_annotate=1; path=/; max-age=2592000';
+          }
+          window.location.reload();
+        });
+      })();
+    JS
+
+    OVERLAY = <<~CSS
       .design-annotation-toggle { position: fixed; bottom: 12px; right: 12px; z-index: 99999; padding: 6px 10px; background: #111; color: #fff; border: 0; border-radius: 6px; font: 12px sans-serif; cursor: pointer; }
       .design-annotation-toggle.is-active { background: #f97316; color: #111; }
       .design-annotation-mode { position: fixed; bottom: 12px; right: 124px; z-index: 99999; padding: 6px 10px; background: #1f2937; color: #fff; border: 0; border-radius: 6px; font: 12px sans-serif; cursor: pointer; }
@@ -35,42 +74,5 @@ module DesignAnnotations
       .design-annotation-marker:hover { transform: translate(-50%, -50%) scale(1.15); }
       .design-annotation-marker.is-resolved { background: #34d399; opacity: .75; }
     CSS
-
-    def view_template
-      tracker = DesignAnnotations.tracker
-      return unless tracker
-
-      div(data: { controller: "annotation-overlay" }) do
-        script(type: "application/json", id: "design-annotation-tree") do
-          raw safe(ERB::Util.json_escape(tracker.tree.to_json))
-        end
-        button(
-          type: "button",
-          data: { action: "click->annotation-overlay#toggle" },
-          class: "design-annotation-toggle"
-        ) { "Annotate" }
-        button(
-          type: "button",
-          data: { action: "click->annotation-overlay#cycleTargetMode", annotation_overlay_target: "modeButton" },
-          class: "design-annotation-mode"
-        ) { "Mode: Component" }
-        div(class: "design-annotation-panel", data: { annotation_overlay_target: "panel" })
-        template(data: { annotation_overlay_target: "popoverTemplate" }) do
-          div(class: "design-annotation-popover") do
-            div(class: "design-annotation-popover-header", data: { annotation_overlay_target: "popoverHeader" })
-            textarea(data: { annotation_overlay_target: "popoverInput" }, placeholder: "Comment…")
-            details(class: "design-annotation-popover-debug") do
-              summary { "Debug" }
-              div(data: { annotation_overlay_target: "popoverDebug" })
-            end
-            div(class: "design-annotation-popover-actions") do
-              button(type: "button", data: { action: "click->annotation-overlay#savePopover" }) { "Save" }
-              button(type: "button", data: { action: "click->annotation-overlay#cancelPopover" }) { "Cancel" }
-            end
-          end
-        end
-        style { raw safe(STYLESHEET) }
-      end
-    end
   end
 end

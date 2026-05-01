@@ -38,11 +38,17 @@ module DesignAnnotations
                  include DesignAnnotations::Phlex if Rails.env.development?
                end
 
-          2. Render the activator + overlay in your dev-only layout sections:
+          2. Render the activator + overlay partials in your dev-only layout
+             sections (works in any Rails view — ERB, Phlex, or ViewComponent):
+
+               <%= render "design_annotations/activator" %>
+               <%= render "design_annotations/overlay" %>
+
+             Wrap with the usual dev-only / tracker guard if desired:
 
                if Rails.env.development? && Current.design_annotations.present?
-                 render DesignAnnotations::Activator.new
-                 render DesignAnnotations::AnnotationOverlay.new
+                 render "design_annotations/activator"
+                 render "design_annotations/overlay"
                end
 
           3. Add `attribute :design_annotations` to your `Current` model and

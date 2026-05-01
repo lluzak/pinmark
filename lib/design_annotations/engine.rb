@@ -6,8 +6,6 @@ module DesignAnnotations
   class Engine < ::Rails::Engine
     isolate_namespace DesignAnnotations
 
-    config.autoload_paths << root.join("app/components")
-
     initializer "design_annotations.hooks" do
       ActiveSupport.on_load(:action_view) do
         require "design_annotations/hooks/erb_partial"
