@@ -90,8 +90,8 @@ export default class extends Controller {
         node_id: nodeId,
         selector,
         comment: value,
-        component: this.nodesById[nodeId]?.component,
-        source: this.nodesById[nodeId]?.source,
+        component: this.nodesById[nodeId]?.component || "(page-level)",
+        source: this.nodesById[nodeId]?.source || null,
         text_excerpt: excerpt,
         captured_at: new Date().toISOString(),
       }],
@@ -293,9 +293,12 @@ export default class extends Controller {
     const nodeId = componentEl?.dataset.designAnnotationId
     const componentName = nodeId ? this.nodesById[nodeId]?.component : null
     let text
-    if (isTagMode) {
+    if (isTagMode && componentEl) {
       const selector = this._domPathRelativeTo(componentEl, targetEl)
       text = `${selector} inside ${componentName || "(unknown)"}`
+    } else if (isTagMode) {
+      const selector = this._domPathRelativeTo(document.body, targetEl)
+      text = `${selector} (page-level)`
     } else {
       text = componentName || "(unknown)"
     }
@@ -334,18 +337,25 @@ export default class extends Controller {
       return
     }
     const componentEl = target.closest("[data-design-annotation-id]")
-    if (!componentEl) {
+    const wantsTag = this.targetMode === "element" ? !altMode : altMode
+
+    let isTagMode, next
+    if (componentEl) {
+      isTagMode = wantsTag && componentEl.contains(target) && target !== componentEl
+      next = isTagMode ? target : componentEl
+    } else if (wantsTag) {
+      // Free element targeting: highlight any element on the page even when
+      // it's outside any annotated component (e.g. layout wrapper divs).
+      isTagMode = true
+      next = target
+    } else {
       this._clearHighlight()
       return
     }
 
-    const wantsTag = this.targetMode === "element" ? !altMode : altMode
-    const isTagMode = wantsTag && componentEl.contains(target) && target !== componentEl
-    const next = isTagMode ? target : componentEl
-
     if (next === this._currentHighlight) {
       // Same primary highlight target, but tag-mode might have flipped
-      if (isTagMode && componentEl !== next) {
+      if (isTagMode && componentEl && componentEl !== next) {
         if (this._currentContextHighlight !== componentEl) {
           this._currentContextHighlight?.classList.remove("design-annotation-highlight-context")
           componentEl.classList.add("design-annotation-highlight-context")
@@ -363,7 +373,7 @@ export default class extends Controller {
     next.classList.add(isTagMode ? "design-annotation-highlight-tag" : "design-annotation-highlight")
     this._currentHighlight = next
 
-    if (isTagMode && componentEl !== next) {
+    if (isTagMode && componentEl && componentEl !== next) {
       componentEl.classList.add("design-annotation-highlight-context")
       this._currentContextHighlight = componentEl
     }
@@ -393,17 +403,23 @@ export default class extends Controller {
     if (this.element.contains(e.target)) return
     if (e.target.closest("#design-annotation-activator")) return
     const componentEl = e.target.closest("[data-design-annotation-id]")
-    if (!componentEl) return
+    const wantsTag = this.targetMode === "element" ? !e.altKey : e.altKey
+
+    let nodeId, selector
+    if (componentEl) {
+      const altMode = wantsTag && e.target !== componentEl
+      nodeId = componentEl.dataset.designAnnotationId
+      selector = altMode ? this._domPathRelativeTo(componentEl, e.target) : null
+    } else if (wantsTag) {
+      // Page-level free target: no annotated ancestor.
+      nodeId = null
+      selector = this._domPathRelativeTo(document.body, e.target)
+    } else {
+      return
+    }
+
     e.preventDefault()
     e.stopPropagation()
-
-    const nodeId = componentEl.dataset.designAnnotationId
-    const wantsTag = this.targetMode === "element" ? !e.altKey : e.altKey
-    const altMode = wantsTag && e.target !== componentEl
-    const selector = altMode
-      ? this._domPathRelativeTo(componentEl, e.target)
-      : null
-
     this._openPopover(e.clientX, e.clientY, nodeId, selector)
   }
 
@@ -486,20 +502,21 @@ export default class extends Controller {
   }
 
   _fillPopoverDetails(popoverNode, nodeId, selector) {
-    const node = this.nodesById[nodeId]
-    if (!node) return
+    const node = nodeId ? this.nodesById[nodeId] : null
 
     const header = popoverNode.querySelector('[data-annotation-overlay-target="popoverHeader"]')
     if (header) {
       header.textContent = ""
       const title = document.createElement("div")
-      title.textContent = node.component
+      title.textContent = node ? node.component : "(page-level element)"
       header.appendChild(title)
 
-      const src = document.createElement("span")
-      src.className = "mcp-source"
-      src.textContent = node.source
-      header.appendChild(src)
+      if (node) {
+        const src = document.createElement("span")
+        src.className = "mcp-source"
+        src.textContent = node.source
+        header.appendChild(src)
+      }
 
       if (selector) {
         const sel = document.createElement("span")
@@ -512,18 +529,23 @@ export default class extends Controller {
     const debug = popoverNode.querySelector('[data-annotation-overlay-target="popoverDebug"]')
     if (debug) {
       debug.textContent = ""
-      const ancestry = this._componentAncestry(nodeId)
       const tree = document.createElement("pre")
       const lines = []
-      lines.push(`node_id: ${nodeId}`)
-      lines.push(`component: ${node.component}`)
-      lines.push(`source: ${node.source}`)
-      if (selector) lines.push(`selector (relative to component): ${selector}`)
-      lines.push("")
-      lines.push("Component ancestry (root → leaf):")
-      ancestry.forEach((n, i) => {
-        lines.push(`${"  ".repeat(i)}└ ${n.component}  (${n.id}, ${n.source})`)
-      })
+      lines.push(`node_id: ${nodeId || "(none — page-level element)"}`)
+      lines.push(`component: ${node ? node.component : "(none)"}`)
+      lines.push(`source: ${node ? node.source : "(none)"}`)
+      if (selector) {
+        const label = node ? "selector (relative to component)" : "selector (relative to <body>)"
+        lines.push(`${label}: ${selector}`)
+      }
+      if (node) {
+        lines.push("")
+        lines.push("Component ancestry (root → leaf):")
+        const ancestry = this._componentAncestry(nodeId)
+        ancestry.forEach((n, i) => {
+          lines.push(`${"  ".repeat(i)}└ ${n.component}  (${n.id}, ${n.source})`)
+        })
+      }
       tree.textContent = lines.join("\n")
       debug.appendChild(tree)
     }
