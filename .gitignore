@@ -1,0 +1,13 @@
+/.bundle/
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+/spec/dummy/log/*
+!/spec/dummy/log/.keep
+/spec/dummy/tmp/*
+!/spec/dummy/tmp/.keep
+/spec/examples.txt
+/coverage/
+*.gem
+.rspec_status
