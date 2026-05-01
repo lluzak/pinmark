@@ -698,12 +698,19 @@ export default class extends Controller {
     const onPage = (this.serverComments || []).filter((c) => (c.page_path || null) === path)
 
     onPage.forEach((c, idx) => {
-      const root = document.querySelector(`[data-design-annotation-id="${CSS.escape(c.node_id)}"]`)
-      if (!root) return
+      let root
+      if (c.node_id) {
+        root = document.querySelector(`[data-design-annotation-id="${CSS.escape(c.node_id)}"]`)
+        if (!root) return
+      } else {
+        // Page-level annotation: selector is relative to <body>.
+        root = document.body
+      }
       let target = root
       if (c.selector) {
         try { target = root.querySelector(c.selector) || root } catch (_) { /* invalid selector */ }
       }
+      if (target === document.body) return // nothing to pin to
       const r = target.getBoundingClientRect()
       if (r.width === 0 && r.height === 0) return // detached / hidden
 
