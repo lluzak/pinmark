@@ -130,8 +130,12 @@ export default class extends Controller {
   _activate() {
     this._onMove = (e) => this._highlightFromEvent(e)
     this._onClick = (e) => this._maybeOpenPopover(e)
+    this._onMouseDown = (e) => this._marqueeMaybeStart(e)
+    this._onMouseUp = (e) => this._marqueeMaybeEnd(e)
     document.addEventListener("mousemove", this._onMove, true)
     document.addEventListener("click", this._onClick, true)
+    document.addEventListener("mousedown", this._onMouseDown, true)
+    document.addEventListener("mouseup", this._onMouseUp, true)
     this.panelTarget.classList.add("is-open")
     this._setToggleLabel(true)
     this._ensureLabel()
@@ -140,11 +144,137 @@ export default class extends Controller {
   _deactivate() {
     if (this._onMove) document.removeEventListener("mousemove", this._onMove, true)
     if (this._onClick) document.removeEventListener("click", this._onClick, true)
+    if (this._onMouseDown) document.removeEventListener("mousedown", this._onMouseDown, true)
+    if (this._onMouseUp) document.removeEventListener("mouseup", this._onMouseUp, true)
+    this._clearMarquee()
     this._clearHighlight()
     this.panelTarget?.classList.remove("is-open")
     this._setToggleLabel(false)
     this._labelEl?.remove()
     this._labelEl = null
+  }
+
+  // --- marquee select ---
+
+  _marqueeMaybeStart(e) {
+    if (!this.active) return
+    if (!e.shiftKey) return
+    if (e.button !== 0) return
+    if (this.element.contains(e.target)) return
+    if (e.target.closest("#design-annotation-activator")) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    this._marqueeState = {
+      startX: e.clientX + window.scrollX,
+      startY: e.clientY + window.scrollY,
+    }
+
+    const box = document.createElement("div")
+    box.className = "design-annotation-marquee"
+    document.body.appendChild(box)
+    this._marqueeBox = box
+
+    this._marqueeMoveHandler = (ev) => this._marqueeUpdate(ev)
+    document.addEventListener("mousemove", this._marqueeMoveHandler, true)
+  }
+
+  _marqueeUpdate(e) {
+    if (!this._marqueeState || !this._marqueeBox) return
+    e.preventDefault()
+    const curX = e.clientX + window.scrollX
+    const curY = e.clientY + window.scrollY
+    const left = Math.min(this._marqueeState.startX, curX)
+    const top = Math.min(this._marqueeState.startY, curY)
+    const width = Math.abs(curX - this._marqueeState.startX)
+    const height = Math.abs(curY - this._marqueeState.startY)
+    this._marqueeBox.style.left = `${left}px`
+    this._marqueeBox.style.top = `${top}px`
+    this._marqueeBox.style.width = `${width}px`
+    this._marqueeBox.style.height = `${height}px`
+  }
+
+  _marqueeMaybeEnd(e) {
+    if (!this._marqueeState) return
+    e.preventDefault()
+    e.stopPropagation()
+
+    const start = this._marqueeState
+    const endX = e.clientX + window.scrollX
+    const endY = e.clientY + window.scrollY
+    const rect = {
+      left: Math.min(start.startX, endX),
+      top: Math.min(start.startY, endY),
+      right: Math.max(start.startX, endX),
+      bottom: Math.max(start.startY, endY),
+    }
+    rect.width = rect.right - rect.left
+    rect.height = rect.bottom - rect.top
+
+    this._clearMarquee()
+
+    if (rect.width < 5 || rect.height < 5) return // accidental click
+
+    const target = this._pickElementFromMarquee(rect)
+    if (!target) return
+
+    const phlexId = target.dataset.designAnnotationId
+    target.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    this._currentHighlight = target
+    target.classList.add("design-annotation-highlight")
+    setTimeout(() => target.classList.remove("design-annotation-highlight"), 1200)
+
+    const tr = target.getBoundingClientRect()
+    this._openPopover(tr.left, tr.top, phlexId, null)
+  }
+
+  _clearMarquee() {
+    if (this._marqueeBox) {
+      this._marqueeBox.remove()
+      this._marqueeBox = null
+    }
+    if (this._marqueeMoveHandler) {
+      document.removeEventListener("mousemove", this._marqueeMoveHandler, true)
+      this._marqueeMoveHandler = null
+    }
+    this._marqueeState = null
+  }
+
+  _pickElementFromMarquee(marquee) {
+    const candidates = Array.from(document.querySelectorAll("[data-design-annotation-id]"))
+      .map((el) => {
+        const r = el.getBoundingClientRect()
+        const docRect = {
+          left: r.left + window.scrollX,
+          top: r.top + window.scrollY,
+          right: r.right + window.scrollX,
+          bottom: r.bottom + window.scrollY,
+        }
+        const intersects = !(docRect.right < marquee.left || docRect.left > marquee.right ||
+                             docRect.bottom < marquee.top || docRect.top > marquee.bottom)
+        const containedInMarquee = docRect.left >= marquee.left && docRect.top >= marquee.top &&
+                                   docRect.right <= marquee.right && docRect.bottom <= marquee.bottom
+        const containsMarquee = docRect.left <= marquee.left && docRect.top <= marquee.top &&
+                                docRect.right >= marquee.right && docRect.bottom >= marquee.bottom
+        const area = (docRect.right - docRect.left) * (docRect.bottom - docRect.top)
+        return { el, area, intersects, containedInMarquee, containsMarquee }
+      })
+      .filter((c) => c.intersects)
+
+    const containedInMarquee = candidates.filter((c) => c.containedInMarquee)
+    if (containedInMarquee.length > 0) {
+      // Largest fully-contained = highest-in-hierarchy fitting visible
+      return containedInMarquee.sort((a, b) => b.area - a.area)[0].el
+    }
+
+    const containingMarquee = candidates.filter((c) => c.containsMarquee)
+    if (containingMarquee.length > 0) {
+      // Smallest enclosing ancestor
+      return containingMarquee.sort((a, b) => a.area - b.area)[0].el
+    }
+
+    return null
   }
 
   _ensureLabel() {

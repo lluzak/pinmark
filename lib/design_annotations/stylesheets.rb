@@ -73,6 +73,7 @@ module DesignAnnotations
       .design-annotation-marker { position: absolute; pointer-events: auto; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%; background: #f97316; color: #111; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); font: 600 11px sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
       .design-annotation-marker:hover { transform: translate(-50%, -50%) scale(1.15); }
       .design-annotation-marker.is-resolved { background: #34d399; opacity: .75; }
+      .design-annotation-marquee { position: absolute; z-index: 99998; border: 1.5px dashed #f97316; background: rgba(249,115,22,.12); pointer-events: none; }
     CSS
   end
 end
