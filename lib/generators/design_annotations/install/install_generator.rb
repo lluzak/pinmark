@@ -60,6 +60,21 @@ module DesignAnnotations
                claude mcp add design-annotations --transport http \\
                  http://localhost:PORT/dev/design_annotations/annotations/mcp
 
+          5. Webpack/yarn-based hosts (no importmap): add the engine as a
+             `file:` dependency in your host's package.json, then import the
+             Stimulus controller directly from the gem — do NOT copy the JS
+             into the host. Example:
+
+               # package.json
+               "design_annotations": "file:#{DesignAnnotations::Engine.root}"
+
+               # app/javascript/packs/your_pack.js
+               import AnnotationOverlayController from 'design_annotations/annotation_overlay_controller'
+               window.Stimulus.register('annotation-overlay', AnnotationOverlayController)
+
+             Run `yarn install` after adding the dependency. The engine is the
+             single source of truth; updates flow through the symlink.
+
         NOTES
       end
     end
