@@ -1,4 +1,6 @@
-# DesignAnnotations
+# Pinmark
+
+Pinmark — pin-style annotations for live UI feedback into Claude Code.
 
 In-page design annotation tool for Rails apps. Adds a development-only overlay
 that lets a designer click on any rendered Phlex / ViewComponent / ERB partial,
@@ -9,19 +11,19 @@ leave a comment, and have an AI assistant pick the comment up over MCP.
 In the host app's `Gemfile`:
 
 ```ruby
-gem "design_annotations", path: "/Users/you/private/design_annotations", group: :development
+gem "pinmark", path: "/Users/you/private/pinmark", group: :development
 ```
 
 Then:
 
 ```bash
 bundle install
-bin/rails generate design_annotations:install
+bin/rails generate pinmark:install
 ```
 
 The generator:
 
-- Mounts `DesignAnnotations::Engine` at `/dev/design_annotations` in `Rails.env.local?`.
+- Mounts `Pinmark::Engine` at `/dev/pinmark` in `Rails.env.local?`.
 - Pins the engine's Stimulus controller into your importmap.
 - Prints follow-up instructions for the parts that have to be wired by hand.
 
@@ -35,7 +37,7 @@ because they live in host-owned classes:
 
    ```ruby
    class Current < ActiveSupport::CurrentAttributes
-     attribute :design_annotations
+     attribute :pinmark
    end
    ```
 
@@ -44,18 +46,18 @@ because they live in host-owned classes:
    Phlex, ViewComponent, mixed):
 
    ```erb
-   <% if Rails.env.development? && Current.design_annotations.present? %>
-     <%= render "design_annotations/activator" %>
-     <%= render "design_annotations/overlay" %>
+   <% if Rails.env.development? && Current.pinmark.present? %>
+     <%= render "pinmark/activator" %>
+     <%= render "pinmark/overlay" %>
    <% end %>
    ```
 
    From a Phlex view the same string-path render works:
 
    ```ruby
-   if Rails.env.development? && Current.design_annotations.present?
-     render "design_annotations/activator"
-     render "design_annotations/overlay"
+   if Rails.env.development? && Current.pinmark.present?
+     render "pinmark/activator"
+     render "pinmark/overlay"
    end
    ```
 
@@ -64,34 +66,34 @@ because they live in host-owned classes:
 
    ```ruby
    class StorefrontController < ApplicationController
-     include DesignAnnotations::Session
+     include Pinmark::Session
    end
    ```
 
 4. **Phlex base class (optional)** — only if your host uses Phlex. Include
    the concern in your component base class so each component render is
-   wrapped in `<!-- design-annotation:begin/end -->` markers. Hosts without
-   Phlex skip this step entirely:
+   wrapped in `<!-- pinmark:begin/end -->` markers. Hosts without Phlex
+   skip this step entirely:
 
    ```ruby
    class Components::Base < Phlex::HTML
-     include DesignAnnotations::Phlex if Rails.env.development?
+     include Pinmark::Phlex if Rails.env.development?
    end
    ```
 
-   `DesignAnnotations::Phlex` is the only Phlex-specific surface in the
-   engine. The activator/overlay UI no longer requires Phlex to be present
-   in the host. The ViewComponent integration is also opt-in and gated on
+   `Pinmark::Phlex` is the only Phlex-specific surface in the engine. The
+   activator/overlay UI no longer requires Phlex to be present in the host.
+   The ViewComponent integration is also opt-in and gated on
    `defined?(::ViewComponent::Base)`.
 
 ## MCP
 
 The engine mounts an in-process MCP HTTP endpoint at
-`/dev/design_annotations/annotations/mcp`. Register it with Claude Code:
+`/dev/pinmark/annotations/mcp`. Register it with Claude Code:
 
 ```bash
-claude mcp add design-annotations --transport http \
-  http://localhost:4500/dev/design_annotations/annotations/mcp
+claude mcp add pinmark --transport http \
+  http://localhost:4500/dev/pinmark/annotations/mcp
 ```
 
 Tools exposed:
@@ -103,7 +105,7 @@ Tools exposed:
 ## Development
 
 ```bash
-cd ~/private/design_annotations
+cd ~/private/pinmark
 bundle install
 bin/rspec
 ```

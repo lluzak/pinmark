@@ -17,7 +17,7 @@ RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
   config.filter_rails_from_backtrace!
 
-  # Reset Current between examples so design_annotations leakage between
+  # Reset Current between examples so pinmark leakage between
   # tests can never silently pass.
   config.before do
     Current.reset

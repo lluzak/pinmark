@@ -1,0 +1,24 @@
+<% tracker = Pinmark.tracker %>
+<% if tracker %>
+  <div data-controller="pinmark">
+    <script type="application/json" id="pinmark-tree"><%= ERB::Util.json_escape(tracker.tree.to_json).html_safe %></script>
+    <button type="button" data-action="click->pinmark#toggle" class="pinmark-toggle">Annotate</button>
+    <button type="button" data-action="click->pinmark#cycleTargetMode" data-pinmark-target="modeButton" class="pinmark-mode">Mode: Component</button>
+    <div class="pinmark-panel" data-pinmark-target="panel"></div>
+    <template data-pinmark-target="popoverTemplate">
+      <div class="pinmark-popover">
+        <div class="pinmark-popover-header" data-pinmark-target="popoverHeader"></div>
+        <textarea data-pinmark-target="popoverInput" placeholder="Comment…"></textarea>
+        <details class="pinmark-popover-debug">
+          <summary>Debug</summary>
+          <div data-pinmark-target="popoverDebug"></div>
+        </details>
+        <div class="pinmark-popover-actions">
+          <button type="button" data-action="click->pinmark#savePopover">Save</button>
+          <button type="button" data-action="click->pinmark#cancelPopover">Cancel</button>
+        </div>
+      </div>
+    </template>
+    <style><%= Pinmark::Stylesheets::OVERLAY.html_safe %></style>
+  </div>
+<% end %>

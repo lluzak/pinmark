@@ -11,7 +11,7 @@ require "action_view/railtie"
 require "phlex/rails"
 require "view_component"
 
-require "design_annotations"
+require "pinmark"
 
 module Dummy
   class Application < Rails::Application
@@ -19,7 +19,7 @@ module Dummy
     config.eager_load = false
     config.consider_all_requests_local = true
     config.active_support.deprecation = :stderr
-    config.secret_key_base = "dummy_secret_key_base_for_design_annotations_engine_tests"
+    config.secret_key_base = "dummy_secret_key_base_for_pinmark_engine_tests"
 
     # Skip ActiveRecord, ActiveJob, Mailer, ActiveStorage — engine doesn't need them.
     config.api_only = false

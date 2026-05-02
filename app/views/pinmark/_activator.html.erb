@@ -1,0 +1,14 @@
+<%
+  enabled = Pinmark.tracker.present?
+  css_class = enabled ? "pinmark-activator is-on" : "pinmark-activator"
+  label = enabled ? "Disable annotations" : "Enable annotations"
+  onclick = "var on=document.cookie.split('; ').some(function(c){return c.indexOf('pinmark=1')===0;});" \
+            "document.cookie=on?'pinmark=; path=/; max-age=0':'pinmark=1; path=/; max-age=2592000';" \
+            "window.location.assign(window.location.pathname+window.location.search);return false;"
+%>
+<button type="button"
+        id="pinmark-activator"
+        class="<%= css_class %>"
+        data-turbo="false"
+        onclick="<%= onclick.html_safe %>"><%= label %></button>
+<style><%= Pinmark::Stylesheets::ACTIVATOR.html_safe %></style>

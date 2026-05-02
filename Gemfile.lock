@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    design_annotations (0.1.0)
+    pinmark (0.1.0)
       mcp (~> 0.14)
       rails (>= 7.1)
 
@@ -277,8 +277,8 @@ PLATFORMS
 
 DEPENDENCIES
   debug
-  design_annotations!
   phlex-rails (~> 2.4)
+  pinmark!
   puma
   rack-test
   rspec-rails (~> 8.0)

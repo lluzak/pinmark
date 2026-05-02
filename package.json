@@ -1,14 +1,14 @@
 {
-  "name": "design_annotations",
+  "name": "pinmark",
   "version": "0.1.0",
   "private": true,
-  "description": "Stimulus controller for the design_annotations Rails engine. Consumed by webpack-based host apps via a `file:` dependency.",
-  "main": "app/javascript/design_annotations/annotation_overlay_controller.js",
+  "description": "Stimulus controller for the pinmark Rails engine. Consumed by webpack-based host apps via a `file:` dependency.",
+  "main": "app/javascript/pinmark/pinmark_controller.js",
   "files": [
-    "app/javascript/design_annotations/annotation_overlay_controller.js"
+    "app/javascript/pinmark/pinmark_controller.js"
   ],
   "exports": {
-    ".": "./app/javascript/design_annotations/annotation_overlay_controller.js",
-    "./annotation_overlay_controller": "./app/javascript/design_annotations/annotation_overlay_controller.js"
+    ".": "./app/javascript/pinmark/pinmark_controller.js",
+    "./pinmark_controller": "./app/javascript/pinmark/pinmark_controller.js"
   }
 }

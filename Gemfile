@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in design_annotations.gemspec.
+# Specify your gem's dependencies in pinmark.gemspec.
 gemspec
 
 gem "puma"
