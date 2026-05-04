@@ -33,8 +33,4 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "mcp", "~> 0.14"
-
-  spec.add_development_dependency "rspec-rails"
-  spec.add_development_dependency "phlex-rails"
-  spec.add_development_dependency "view_component"
 end
