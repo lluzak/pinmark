@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Docs: full README rewrite with badges, Quickstart, and a documentation index.
+- Docs: new `docs/` directory — architecture, configuration reference, MCP tool reference, troubleshooting.
+- Docs: `CONTRIBUTING.md` covers the local dev loop, spec layout, and release steps.
+- Tests: add spec coverage for the Phlex `around_template` hook (`Pinmark::Phlex`).
+- Build: drop development dependencies from the gemspec — they live in the Gemfile only — so frozen `bundle install` succeeds in CI.
+
 ## 0.1.1 — 2026-05-04
 
 - Fix gemspec missing `require_paths`, which prevented Bundler.require from auto-loading Pinmark in host apps.
