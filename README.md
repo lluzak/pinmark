@@ -1,17 +1,39 @@
 # Pinmark
 
-Pinmark — pin-style annotations for live UI feedback into Claude Code.
+Pin-style UI annotations that flow into Claude Code via MCP.
 
-In-page design annotation tool for Rails apps. Adds a development-only overlay
-that lets a designer click on any rendered Phlex / ViewComponent / ERB partial,
-leave a comment, and have an AI assistant pick the comment up over MCP.
+![demo](docs/demo.gif)
 
-## Installation
+## Why Pinmark?
+
+You spot something off in the browser — a misaligned card, a copy bug, the wrong
+shade of orange. Normally you'd switch contexts: open the editor, hunt for the
+component, type the prompt, paste a screenshot, describe the spot.
+
+Pinmark closes that loop. Click the element on the page, type the comment,
+keep working. Claude Code reads the queue over MCP and edits the right file —
+because each annotation already carries its source `file:line`, the component
+class, and the DOM selector.
+
+## What you get
+
+- Floating "Enable annotations" activator that survives Turbo navigation.
+- Click-to-pin overlay with popover, side panel, on-page pin markers, marquee
+  select, hover label, and a dual-highlight context for component vs. element.
+- `<!-- pinmark:begin/end -->` HTML markers around every Phlex / ViewComponent /
+  ERB partial render — automatically.
+- File-backed atomic queue. Survives reloads, no database needed.
+- Rack-mountable MCP HTTP server, in-process with your Rails app.
+- Four MCP tools so Claude Code can list, resolve, and clear annotations.
+
+## Install
 
 In the host app's `Gemfile`:
 
 ```ruby
-gem "pinmark", path: "/Users/you/private/pinmark", group: :development
+group :development do
+  gem "pinmark"
+end
 ```
 
 Then:
@@ -21,18 +43,25 @@ bundle install
 bin/rails generate pinmark:install
 ```
 
-The generator:
+The generator mounts `Pinmark::Engine` at `/dev/pinmark` (only when
+`Rails.env.local?`) and pins the engine's Stimulus controller into your
+importmap.
 
-- Mounts `Pinmark::Engine` at `/dev/pinmark` in `Rails.env.local?`.
-- Pins the engine's Stimulus controller into your importmap.
-- Prints follow-up instructions for the parts that have to be wired by hand.
+For webpack / esbuild hosts, the same controller is published as an exports map
+in `package.json` — add `"pinmark": "*"` (or a `file:` path during local
+development) to your `package.json` and import it from your Stimulus entry
+point:
 
-## Manual wiring
+```js
+import PinmarkController from "pinmark"
+application.register("pinmark", PinmarkController)
+```
 
-The engine is intentionally minimal — a few host touch-points remain manual
-because they live in host-owned classes:
+## Configure
 
-1. **Current attributes** — the per-request tracker lives on
+A few host touch-points stay manual because they live in host-owned classes.
+
+1. **Current attribute** — pinmark stores the per-request tracker on
    `ActiveSupport::CurrentAttributes`:
 
    ```ruby
@@ -41,9 +70,17 @@ because they live in host-owned classes:
    end
    ```
 
-2. **Layout** — render the activator + overlay partials near the bottom of
-   `<body>`. The partials are plain ERB so they work in any host (ERB,
-   Phlex, ViewComponent, mixed):
+2. **Controller** — include the session concern in any controller whose
+   responses should support annotations:
+
+   ```ruby
+   class ApplicationController < ActionController::Base
+     include Pinmark::Session
+   end
+   ```
+
+3. **Layout** — render the activator + overlay near the bottom of `<body>` in
+   your dev layout:
 
    ```erb
    <% if Rails.env.development? && Current.pinmark.present? %>
@@ -52,28 +89,7 @@ because they live in host-owned classes:
    <% end %>
    ```
 
-   From a Phlex view the same string-path render works:
-
-   ```ruby
-   if Rails.env.development? && Current.pinmark.present?
-     render "pinmark/activator"
-     render "pinmark/overlay"
-   end
-   ```
-
-3. **Controllers** — include the session concern in the controllers whose
-   responses should support annotations:
-
-   ```ruby
-   class StorefrontController < ApplicationController
-     include Pinmark::Session
-   end
-   ```
-
-4. **Phlex base class (optional)** — only if your host uses Phlex. Include
-   the concern in your component base class so each component render is
-   wrapped in `<!-- pinmark:begin/end -->` markers. Hosts without Phlex
-   skip this step entirely:
+4. **Phlex base class (optional)** — only if your host uses Phlex:
 
    ```ruby
    class Components::Base < Phlex::HTML
@@ -81,31 +97,74 @@ because they live in host-owned classes:
    end
    ```
 
-   `Pinmark::Phlex` is the only Phlex-specific surface in the engine. The
-   activator/overlay UI no longer requires Phlex to be present in the host.
-   The ViewComponent integration is also opt-in and gated on
-   `defined?(::ViewComponent::Base)`.
+   ViewComponent and ERB partial wrapping are auto-applied at engine boot — no
+   per-host wiring needed.
 
-## MCP
+5. **Mount** — the install generator adds this, but for reference:
 
-The engine mounts an in-process MCP HTTP endpoint at
-`/dev/pinmark/annotations/mcp`. Register it with Claude Code:
+   ```ruby
+   # config/routes.rb
+   mount Pinmark::Engine, at: "/dev/pinmark" if Rails.env.local?
+   ```
+
+## Use
+
+Visit any page in development. Click the floating "Enable annotations" button.
+Hover any component or element, click to drop a pin, leave a comment, save.
+Pins persist on the page and across navigation until they're addressed.
+
+## Connect to Claude Code
 
 ```bash
 claude mcp add pinmark --transport http \
-  http://localhost:4500/dev/pinmark/annotations/mcp
+  http://localhost:PORT/dev/pinmark/annotations/mcp
 ```
 
 Tools exposed:
 
-- `list_pending_annotations`
-- `mark_addressed`
-- `clear_addressed`
+- `list_pending_annotations` — every open annotation, with `file:line`,
+  component class, DOM selector, comment, and page path.
+- `list_resolved_annotations` — annotations that were already addressed.
+- `mark_addressed` — flip an annotation by `id`.
+- `clear_addressed` — purge the resolved bucket.
+
+After Claude Code makes the change, it calls `mark_addressed` and the pin
+disappears from the page on the next reload.
+
+## How it works
+
+- Render hooks emit HTML comment markers (`<!-- pinmark:begin id=... -->` …
+  `<!-- pinmark:end id=... -->`) around every component render.
+- A per-request `Pinmark::Tracker` collects the parent/child hierarchy plus the
+  source location for each marker.
+- The Stimulus controller in the browser walks the DOM, resolves which
+  component is under the cursor, draws highlights, and POSTs annotations to the
+  engine's controller.
+- Annotations are appended atomically to `tmp/pinmark/queue.json`.
+- The MCP server reads the same JSON file and exposes the four tools listed
+  above. Claude Code talks to your local Rails app directly — no separate
+  process.
+
+## Renderer support
+
+| Renderer       | Wiring                                                      |
+| -------------- | ----------------------------------------------------------- |
+| Phlex          | `include Pinmark::Phlex` in your component base class       |
+| ViewComponent  | Auto — `render_in` is prepended at engine boot              |
+| ERB partial    | Auto — `render_partial_template` is prepended at engine boot |
 
 ## Development
 
 ```bash
-cd ~/private/pinmark
+git clone https://github.com/lluzak/pinmark.git
+cd pinmark
 bundle install
-bin/rspec
+bundle exec rspec
 ```
+
+Pull requests welcome. Please add specs for any new behavior and keep the diff
+focused — Pinmark stays intentionally small.
+
+## License
+
+MIT — see [LICENSE.txt](LICENSE.txt).
