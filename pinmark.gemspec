@@ -29,6 +29,8 @@ Gem::Specification.new do |spec|
       .reject { |f| f.match(%r{^(spec|tmp|node_modules)/}) }
   end
 
+  spec.require_paths = ["lib"]
+
   spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "mcp", "~> 0.14"
 
