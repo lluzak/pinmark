@@ -1,0 +1,9 @@
+_site/
+.jekyll-cache/
+.jekyll-metadata
+vendor/
+.bundle/
+
+# Root .gitignore excludes Gemfile.lock (gem convention) — re-include
+# it here because the docs site is a Jekyll app and wants a pinned lock.
+!Gemfile.lock

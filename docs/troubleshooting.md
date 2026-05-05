@@ -1,3 +1,10 @@
+---
+title: Troubleshooting
+layout: default
+nav_order: 5
+permalink: /troubleshooting/
+---
+
 # Troubleshooting
 
 ## "I clicked Enable annotations but nothing happens"

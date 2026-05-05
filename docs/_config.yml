@@ -1,0 +1,37 @@
+title: Pinmark
+description: Pin-style UI annotations that flow into Claude Code via MCP.
+url: https://lluzak.github.io
+baseurl: /pinmark
+
+remote_theme: just-the-docs/just-the-docs
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+
+color_scheme: light
+search_enabled: true
+heading_anchors: true
+
+aux_links:
+  GitHub: https://github.com/lluzak/pinmark
+  RubyGems: https://rubygems.org/gems/pinmark
+
+aux_links_new_tab: true
+
+footer_content: >-
+  Pinmark is MIT-licensed.
+  <a href="https://github.com/lluzak/pinmark">Source on GitHub</a>.
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - .bundle/
+  - README.md
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

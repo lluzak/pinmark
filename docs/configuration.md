@@ -1,3 +1,10 @@
+---
+title: Configuration
+layout: default
+nav_order: 3
+permalink: /configuration/
+---
+
 # Configuration reference
 
 Pinmark deliberately exposes a tiny surface — most behavior is gated on

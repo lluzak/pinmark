@@ -1,3 +1,10 @@
+---
+title: Architecture
+layout: default
+nav_order: 2
+permalink: /architecture/
+---
+
 # Architecture
 
 Pinmark runs entirely inside your Rails dev process. There is no sidecar, no

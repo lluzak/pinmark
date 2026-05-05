@@ -1,3 +1,10 @@
+---
+title: MCP tools
+layout: default
+nav_order: 4
+permalink: /mcp-tools/
+---
+
 # MCP tool reference
 
 Pinmark exposes four MCP tools. All four take no positional args (other than
