@@ -84,6 +84,10 @@ GEM
       uri (>= 0.13.1)
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
+    appraisal (2.5.0)
+      bundler
+      rake
+      thor (>= 0.14.0)
     base64 (0.3.0)
     bigdecimal (4.1.2)
     builder (3.3.0)
@@ -276,12 +280,13 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  appraisal (~> 2.5)
   debug
   phlex-rails (~> 2.4)
   pinmark!
   puma
   rack-test
-  rspec-rails (~> 8.0)
+  rspec-rails (>= 7.0)
   sqlite3
   view_component (~> 4)
 

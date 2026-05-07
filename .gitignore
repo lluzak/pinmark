@@ -2,6 +2,7 @@
 .bundle/
 .rspec_status
 Gemfile.lock
+gemfiles/*.gemfile.lock
 node_modules/
 pkg/
 spec/dummy/log/
