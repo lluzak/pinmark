@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pinmark dummy app</title>
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body { font: 14px/1.5 system-ui, sans-serif; margin: 0; padding: 24px 32px 96px; max-width: 960px; }
+      header { border-bottom: 1px solid #ccc; margin-bottom: 24px; padding-bottom: 12px; }
+      header nav a { margin-right: 12px; }
+      h1 { margin: 0 0 8px; font-size: 22px; }
+      h2 { margin: 24px 0 8px; font-size: 18px; }
+      h3 { margin: 0 0 4px; font-size: 16px; }
+      .stack > * + * { margin-top: 12px; }
+      .card { padding: 12px 16px; border: 1px solid #d0d0d0; border-radius: 8px; background: #fafafa; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .scrollbox { height: 220px; overflow: auto; border: 1px dashed #888; padding: 12px; }
+      .filler { height: 1200px; background: linear-gradient(180deg, #eef, #efe); border-radius: 8px; }
+      .transformed { transform: translateZ(0); padding: 12px; border: 1px dashed #c33; }
+      pre { background: #f4f4f4; padding: 8px; border-radius: 6px; overflow: auto; }
+    </style>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@hotwired/stimulus": "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/dist/stimulus.js",
+          "pinmark/pinmark_controller": "<%= pinmark_controller_asset_path %>"
+        }
+      }
+    </script>
+    <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+    <script type="module">
+      import { Application } from "@hotwired/stimulus"
+      import PinmarkController from "pinmark/pinmark_controller"
+      const app = Application.start()
+      app.register("pinmark", PinmarkController)
+      window.Stimulus = app
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Pinmark dummy app</h1>
+      <nav>
+        <a href="<%= demo_home_path %>">Home</a>
+        <a href="<%= demo_erb_path %>">ERB</a>
+        <a href="<%= demo_view_component_path %>">ViewComponent</a>
+        <a href="<%= demo_phlex_path %>">Phlex</a>
+      </nav>
+    </header>
+
+    <main>
+      <%= yield %>
+    </main>
+
+    <% if Pinmark.tracker.present? %>
+      <%= render "pinmark/overlay" %>
+    <% end %>
+    <%= render "pinmark/activator" %>
+  </body>
+</html>

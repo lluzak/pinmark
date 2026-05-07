@@ -1,0 +1,25 @@
+<h2>ERB partials</h2>
+<p>Each card below is rendered by the same <code>_card.html.erb</code> partial. The Pinmark ERB hook wraps every partial render with begin/end markers.</p>
+
+<section class="stack">
+  <%= render "demo/card", title: "ERB card 1", body: "Hello from ERB." %>
+  <%= render "demo/card", title: "ERB card 2", body: "Annotate me." %>
+
+  <h3>Layout stress tests</h3>
+
+  <h4>Inline-flow inside a transformed ancestor</h4>
+  <div class="transformed">
+    <%= render "demo/card", title: "Inside transform: translateZ(0)", body: "Markers should still align here." %>
+  </div>
+
+  <h4>Inside a scroll container</h4>
+  <div class="scrollbox">
+    <%= render "demo/card", title: "Scroll card 1", body: "Scroll the container, then re-check pin alignment." %>
+    <%= render "demo/card", title: "Scroll card 2", body: "Markers placed by document scroll only — inner scroll is tricky." %>
+    <div class="filler"></div>
+  </div>
+
+  <h4>Long page (page-scroll alignment)</h4>
+  <div class="filler"></div>
+  <%= render "demo/card", title: "Far-down card", body: "Scroll to me to test page-scroll math." %>
+</section>

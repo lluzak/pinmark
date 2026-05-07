@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Boots the spec/dummy Rails app as a local browser-testing sandbox for the
+# pinmark engine. Defaults to development on port 3030.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+export RAILS_ENV="${RAILS_ENV:-development}"
+PORT="${PORT:-3030}"
+HOST="${HOST:-127.0.0.1}"
+
+echo "[bin/dummy] booting spec/dummy on http://${HOST}:${PORT} (RAILS_ENV=${RAILS_ENV})"
+exec bundle exec rackup --port "${PORT}" --host "${HOST}" spec/dummy/config.ru

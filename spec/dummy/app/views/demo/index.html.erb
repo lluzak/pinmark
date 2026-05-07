@@ -1,0 +1,17 @@
+<h2>Welcome</h2>
+<p>This is a sandbox app for testing the <code>pinmark</code> engine in a browser.</p>
+
+<ol>
+  <li>Click <strong>Enable annotations</strong> in the bottom-right corner.</li>
+  <li>The page reloads with the overlay active. Click <strong>Annotate</strong>.</li>
+  <li>Hover over any card or element on the demo pages to drop a pin.</li>
+</ol>
+
+<p>Pages exercise the three render paths supported by Pinmark:</p>
+<ul>
+  <li><a href="<%= demo_erb_path %>">ERB partials</a></li>
+  <li><a href="<%= demo_view_component_path %>">ViewComponent</a></li>
+  <li><a href="<%= demo_phlex_path %>">Phlex</a></li>
+</ul>
+
+<p>The MCP queue is mounted at <code>/dev/pinmark/annotations/mcp</code>.</p>

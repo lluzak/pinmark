@@ -27,5 +27,10 @@ module Dummy
     # Tests need a writable host config root.
     config.root = File.expand_path("..", __dir__)
     config.autoload_paths << File.expand_path("../app/components", __dir__)
+    config.autoload_paths << File.expand_path("../app/views", __dir__)
+
+    # Allow the dev-server to bind any host (the dummy app is for local
+    # browser testing only).
+    config.hosts.clear if config.respond_to?(:hosts)
   end
 end

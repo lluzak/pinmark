@@ -1,0 +1,8 @@
+<h2>ViewComponent</h2>
+<p>Cards rendered by <code>DemoCardComponent</code> via the Pinmark ViewComponent hook.</p>
+
+<section class="stack">
+  <%= render(DemoCardComponent.new(title: "VC card 1", body: "Hello from ViewComponent.")) %>
+  <%= render(DemoCardComponent.new(title: "VC card 2", body: "Annotate me.")) %>
+  <%= render(DemoCardComponent.new(title: "VC card 3", body: "Multiple instances should each get distinct markers.")) %>
+</section>
